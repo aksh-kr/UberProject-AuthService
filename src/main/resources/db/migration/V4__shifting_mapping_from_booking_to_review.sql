@@ -1,0 +1,11 @@
+ALTER TABLE booking_review
+    ADD booking_id BIGINT NULL;
+
+ALTER TABLE booking
+    ADD booking_status ENUM('SCHEDULED','CANCELLED','CAB_ARRIVED','ASSIGNING_DRIVER','IN_RIDE','COMPLETED') NULL;
+
+ALTER TABLE booking_review
+    ADD CONSTRAINT FK_BOOKING_REVIEW_ON_BOOKING FOREIGN KEY (booking_id) REFERENCES booking (id);
+
+ALTER TABLE booking_review
+    MODIFY content VARCHAR(255) NOT NULL;
