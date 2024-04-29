@@ -26,7 +26,7 @@ public class JwtService implements CommandLineRunner {
     /**
      * THis method creates a brand-new JWT token based on a payload
      */
-    private String createToken(Map<String, Object> payload, String email) {
+    public String createToken(Map<String, Object> payload, String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiry*1000L);
         return Jwts.builder()
@@ -38,7 +38,11 @@ public class JwtService implements CommandLineRunner {
                 .compact();
     }
 
-    private Claims extractAllPayloads(String token) {
+    public String createToken(String email) {
+        return createToken(new HashMap<>(), email);
+    }
+
+    public Claims extractAllPayloads(String token) {
         return Jwts
                 .parser()
                 .setSigningKey(getSignKey())
@@ -52,11 +56,11 @@ public class JwtService implements CommandLineRunner {
         return claimsResolver.apply(claims);
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private String extractEmail(String token) {
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -65,20 +69,20 @@ public class JwtService implements CommandLineRunner {
      *
      * true if token is expired, else false
      */
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    private Key getSignKey( ){
+    public Key getSignKey( ){
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    private Boolean validateToken(String token, String email) {
+    public Boolean validateToken(String token, String email) {
         final String userEmailFetchedFromToken = extractEmail(token);
         return (userEmailFetchedFromToken.equals(email)) && !isTokenExpired(token);
     }
 
-    private Object extractPayload(String token, String payloadKey) {
+    public Object extractPayload(String token, String payloadKey) {
         Claims claim = extractAllPayloads(token);
         return (Object) claim.get(payloadKey);
     }
