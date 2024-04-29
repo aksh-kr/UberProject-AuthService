@@ -1,6 +1,10 @@
 package org.example.uberprojectauthservice.controllers;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.uberprojectauthservice.dtos.AuthRequestDto;
 import org.example.uberprojectauthservice.dtos.AuthResponseDto;
@@ -20,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.SecretKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +34,9 @@ public class AuthController {
 
     @Value("${cookie.expiry}")
     private int cookieExpiry;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
@@ -61,9 +69,22 @@ public class AuthController {
                     .build();
 
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return new ResponseEntity<>(AuthResponseDto.builder().success(true).build(), HttpStatus.OK);
+            return new ResponseEntity<>(jwtToken, HttpStatus.OK);
         } else {
             throw new UsernameNotFoundException("Invalid email or password");
         }
     }
+
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestBody String token) {
+        try {
+            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+            Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            return new ResponseEntity<>("Token is valid", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Token not Valid", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
 }
