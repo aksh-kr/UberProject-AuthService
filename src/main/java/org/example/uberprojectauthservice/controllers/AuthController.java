@@ -3,6 +3,7 @@ package org.example.uberprojectauthservice.controllers;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -75,16 +76,12 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestBody String token) {
-        try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-            return new ResponseEntity<>("Token is valid", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Token not Valid", HttpStatus.BAD_REQUEST);
+    @GetMapping("/validate")
+    public ResponseEntity<?> validate(HttpServletRequest request) {
+        for(Cookie cookie : request.getCookies()) {
+            System.out.println(cookie.getName() + " " +cookie.getValue());
         }
-
+        return new ResponseEntity<>("Success", HttpStatus.OK);
     }
 
 }
