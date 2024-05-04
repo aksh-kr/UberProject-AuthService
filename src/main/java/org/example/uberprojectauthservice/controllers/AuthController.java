@@ -40,7 +40,9 @@ public class AuthController {
     private String jwtSecret;
 
     private final AuthService authService;
+
     private final AuthenticationManager authenticationManager;
+
     private final JwtService jwtService;
 
     public AuthController(AuthService authService, AuthenticationManager authenticationManager, JwtService jwtService) {
@@ -66,20 +68,22 @@ public class AuthController {
                     .httpOnly(true)
                     .secure(false)
                     .path("/")
-                    .maxAge(cookieExpiry)
+                    .maxAge(7*24*3600)
                     .build();
 
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return new ResponseEntity<>(jwtToken, HttpStatus.OK);
+            return new ResponseEntity<>(AuthResponseDto.builder().success(true).build(), HttpStatus.OK);
         } else {
-            throw new UsernameNotFoundException("Invalid email or password");
+            throw new UsernameNotFoundException("User not found");
         }
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<?> validate(HttpServletRequest request) {
+    public ResponseEntity<?> validate(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Inside validate controller");
+
         for(Cookie cookie : request.getCookies()) {
-            System.out.println(cookie.getName() + " " +cookie.getValue());
+            System.out.println(cookie.getName() + " " + cookie.getValue());
         }
         return new ResponseEntity<>("Success", HttpStatus.OK);
     }
